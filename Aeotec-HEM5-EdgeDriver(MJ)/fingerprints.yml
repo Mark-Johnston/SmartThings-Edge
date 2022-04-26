@@ -1,0 +1,13 @@
+zwaveManufacturer:
+  - id: "AeotecEnergyMonitor/US"
+    deviceLabel: Aeotec Energy Monitor
+    manufacturerId: 0x0086
+    productType: 0x0102
+    productId: 0x005F
+    deviceProfileName: Aeotec-HEM5
+  - id: "AeotecEnergyMonitor/EU"
+    deviceLabel: Aeotec Energy Monitor
+    manufacturerId: 0x0086
+    productType: 0x0002
+    productId: 0x005F
+    deviceProfileName: Aeotec-HEM5

@@ -1,0 +1,4 @@
+name: 'Aeotec-HEM5(mj)'
+packageKey: 'Aeotec-HEM5(mj)'
+permissions:
+  zwave: {}
