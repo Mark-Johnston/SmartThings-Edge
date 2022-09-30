@@ -1,4 +1,5 @@
 This community written Smartthings EDGE driver is for the Aeotec Home Energy Meter Gen 5
+It can be installed via the channel invitation at https://bestow-regional.api.smartthings.com/invite/o3jV3EPkmDMV
 
 This was written because the stock driver was missing all of the positives that were available on the groovy platform thanks to https://github.com/ClassicGOD/SmartThingsPublic/tree/master/devicetypes/classicgod/aeotec-hem-gen5.src
 
@@ -14,3 +15,5 @@ This was developed with inspiration from the following areas:
 - Of course, the community is fab too https://community.smartthings.com/t/tutorial-creating-drivers-for-z-wave-devices-with-smartthings-edge/229503
 
 This was written by me, for me, but if this works for the community, then glad to be of service. I have the 3 clamp version, one clamp on my ASHP, one clamp on the Solar inverter, and one clamp reporting everything else. This was done so I could have automations like "if the solar is generating more than 800w, then turn on the ASHP", and "if the car is plugged in while solar is generating, turn off the ASHP" - essentially giving me better control of how I use the energy in my home.
+
+This is my first edge driver, so if there are improvements, please feel free to issue pull requests.
