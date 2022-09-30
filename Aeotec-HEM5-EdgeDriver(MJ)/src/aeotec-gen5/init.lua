@@ -12,6 +12,13 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+
+-- To do
+-- - Delete dump(o)
+-- - Add custom capability for amps and cost (i.e. price * kwh)
+-- - Add reset option
+-- - Add CRC16 encapsulation
+
 local capabilities = require "st.capabilities"
 --- @type st.zwave.CommandClass.Configuration
 local Configuration = (require "st.zwave.CommandClass.Configuration")({ version=1 })
@@ -23,6 +30,7 @@ local log = require "log"
 local preferencesMap = require "preferences"
 
 
+
 local AEOTEC_GEN5_FINGERPRINTS = {
   {mfr = 0x0086, prod = 0x0102, model = 0x005F},  -- Aeotec Home Energy Meter (Gen5) US
   {mfr = 0x0086, prod = 0x0002, model = 0x005F},  -- Aeotec Home Energy Meter (Gen5) EU
@@ -31,6 +39,24 @@ local AEOTEC_GEN5_FINGERPRINTS = {
 local POWER_UNIT_WATT = "W"
 local ENERGY_UNIT_KWH = "kWh"
 local VOLTAGE_UNIT_V = "V"
+local AMPERE_UNIT_A = "A"
+
+local intIndentCounter = 0
+local function dump(o) 
+    if type(o) == 'table' then
+intIndentCounter = intIndentCounter + 1
+        local s = string.sub("                                    ",1,intIndentCounter) .. '{ '
+        for k,v in pairs(o) do
+log.warn("Found pair called", k, v)
+                if type(k) ~= 'number' then k = '"'..k..'"' end
+                s = s .. '['..k..'] = ' .. dump(v) .. ','
+        end
+intIndentCounter = intIndentCounter - 1
+        return s .. '}\n\r '
+    else
+        return tostring(o)
+    end
+end
 
 --- Handle preference changes
 ---
@@ -39,19 +65,34 @@ local VOLTAGE_UNIT_V = "V"
 --- @param event table
 --- @param args
 local function info_changed(driver, device, event, args)
+  local groupArray = { g1 = { value = 0, changed = false}, g2 = { value = 0, changed = false}, g3 = { value = 0, changed = false}}
   local preferences = preferencesMap.get_device_parameters(device)
-log.info("mj-info_changed - just started routine")
- if preferences then
- log.info("mj-info_changed - passed 'if preferences'")
+
+  if preferences then
     for id, value in pairs(device.preferences) do
-	log.info("mj-info_changed", id, value, args.old_st_store.preferences[id], device.preferences[id])
+      if(groupArray[string.sub(id,1,2)]) then -- Record all the binary values in the groups 1-3 to set params 101-103
+		groupArray[string.sub(id,1,2)].value = groupArray[string.sub(id,1,2)].value + preferencesMap.to_numeric_value(device.preferences[id])
+        if args.old_st_store.preferences[id] ~= value then
+          groupArray[string.sub(id,1,2)].changed = true
+		end
+	  end
+
       if args.old_st_store.preferences[id] ~= value and preferences[id] then
         local new_parameter_value = preferencesMap.to_numeric_value(device.preferences[id])
-log.info("mj-info_changed - about to send zwave stuff like:", preferences[id].parameter_number, preferences[id].size, new_parameter_value)
-
---          device:send(Configuration:Set({parameter_number = preferences[id].parameter_number, size = preferences[id].size, configuration_value = new_parameter_value}))
+		log.info("About to set zwave parameter:", preferences[id].parameter_number, preferences[id].size, new_parameter_value)
+        device:send(Configuration:Set({parameter_number = preferences[id].parameter_number, size = preferences[id].size, configuration_value = new_parameter_value}))
       end
     end
+    for group, array in pairs(groupArray) do
+      if array.changed then
+	    log.info("About to set parameter for group setting", "value" .. group, " to ", array.value)
+        device:send(Configuration:Set({parameter_number = preferences["value" .. group].parameter_number, size = preferences["value" .. group].size, configuration_value = array.value}))
+      end
+	end
+	
+	device:send(Configuration:Get({}))
+log.info("Just forced a device parameter referesh and they now look like:")
+	dump(device.preferences)
   end
 end
 
@@ -66,25 +107,23 @@ local function can_handle_aeotec_gen5_meter(opts, driver, device, ...)
 end
 
 local do_configure = function (self, device)
-log.info("mj-configuring the HEM params")
-  device:send(Configuration:Set({parameter_number = 101, size = 4, configuration_value = 592128})) -- all clamp 1
-  device:send(Configuration:Set({parameter_number = 102, size = 4, configuration_value = 1184256})) -- all clamp 2
-  device:send(Configuration:Set({parameter_number = 103, size = 4, configuration_value = 2368512})) -- all clamp 3
+--  device:send(Configuration:Set({parameter_number = 101, size = 4, configuration_value = 592128})) -- all clamp 1
+--  device:send(Configuration:Set({parameter_number = 102, size = 4, configuration_value = 1184256})) -- all clamp 2
+--  device:send(Configuration:Set({parameter_number = 103, size = 4, configuration_value = 2368512})) -- all clamp 3
 --  device:send(Configuration:Set({parameter_number = 101, size = 4, configuration_value = 3}))   -- report total power in Watts and total energy in kWh...
 --  device:send(Configuration:Set({parameter_number = 102, size = 4, configuration_value = 0}))  - -- disable group 2...
 --  device:send(Configuration:Set({parameter_number = 103, size = 4, configuration_value = 0}))   -- disable group 3...
   device:send(Configuration:Set({parameter_number = 111, size = 4, configuration_value = 300})) -- ...every 5 min
-  device:send(Configuration:Set({parameter_number = 112, size = 4, configuration_value = 300})) -- ...every 5 min
+ device:send(Configuration:Set({parameter_number = 112, size = 4, configuration_value = 300})) -- ...every 5 min
   device:send(Configuration:Set({parameter_number = 113, size = 4, configuration_value = 300})) -- ...every 5 min
   device:send(Configuration:Set({parameter_number = 90, size = 1, configuration_value = 0}))    -- enabling automatic reports, disabled selective reporting...
-  device:send(Configuration:Set({parameter_number = 13, size = 1, configuration_value = 0}))   -- disable CRC16 encapsulation
+  device:send(Configuration:Set({parameter_number = 13, size = 1, configuration_value = 1}))   -- disable CRC16 encapsulation
 end
 
 
 
 function meter_report_handler(self, device, cmd)
   local event_arguments = nil
-log.info("mj-in meter_report_handler", self, device, cmd)
   if cmd.args.scale == Meter.scale.electric_meter.KILOWATT_HOURS then
     event_arguments = {
       value = cmd.args.meter_value,
@@ -140,15 +179,15 @@ local aeotec_gen5_meter = {
   supported_capabilities = {
 	capabilities.refresh
   },
-  zwave_handlers = { -- added from this line
+  zwave_handlers = {
     [cc.METER] = {
       [Meter.REPORT] = meter_report_handler
     }
-  }, -- to this line
+  },
   lifecycle_handlers = {
     doConfigure = do_configure,
 	infoChanged = info_changed,
-	init = device_init -- added this line too (don't forget comma above)
+	init = device_init
   },
   NAME = "aeotec gen5 meter",
   can_handle = can_handle_aeotec_gen5_meter

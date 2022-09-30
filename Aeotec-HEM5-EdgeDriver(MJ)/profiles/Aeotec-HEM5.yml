@@ -37,8 +37,114 @@ components:
   categories:
   - name: CurbPowerMeter
 preferences:
-  - preferenceId: tempOffset
-    explicit: true
+  - name: "refreshOnTimeOrQuantum"
+    title: "Selective reporting (Watts vs Secs)"
+    description: "0 = update based on refresh interval (in seconds). 1 = update whenever wattage changes beyond specified level. Note - you need to set thresholds below..."
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 1
+      default: 0
+  - name: "percentageChangeWholeHEM"
+    title: "Whole HEM - Percentage change"
+    description: "Percentage change in wattage, FOR WHOLE HEM, to trigger an update (default is 10%)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 100
+      default: 10
+  - name: "wattageChangeWholeHEM"
+    title: "Whole HEM - Wattage change"
+    description: "Change in wattage, FOR WHOLE HEM,  to trigger an update (default is 50W)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 60000
+      default: 50
+  - name: "c1RefreshInterval"
+    title: "Clamp 1 - Refresh Interval (sec)"
+    description: "Interval (default is 300 seconds) between data refresh - warning too frequently may impact hub performance"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 5
+      maximum: 2147483647
+      default: 300
+  - name: "c1PercentageChange"
+    title: "Clamp 1 - Percentage change"
+    description: "Percentage change in wattage to trigger an update (default is 10%)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 100
+      default: 10
+  - name: "c1WattageChange"
+    title: "Clamp 1 - Wattage change"
+    description: "Change in wattage to trigger an update (default is 50W)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 60000
+      default: 50
+  - name: "c2RefreshInterval"
+    title: "Clamp 2 - Refresh Interval (sec)"
+    description: "Interval (default is 300 seconds) between data refresh - warning too frequently may impact hub performance"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 5
+      maximum: 2147483647
+      default: 300
+  - name: "c2PercentageChange"
+    title: "Clamp 2 - Percentage change"
+    description: "Percentage change in wattage to trigger an update (default is 10%)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 100
+      default: 10
+  - name: "c2WattageChange"
+    title: "Clamp 2 - Wattage change"
+    description: "Change in wattage to trigger an update (default is 50W)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 60000
+      default: 50
+  - name: "c3RefreshInterval"
+    title: "Clamp 3 - Refresh Interval (sec)"
+    description: "Interval (default is 300 seconds) between data refresh - warning too frequently may impact hub performance"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 5
+      maximum: 2147483647
+      default: 300
+  - name: "c3PercentageChange"
+    title: "Clamp 3 - Percentage change"
+    description: "Percentage change in wattage to trigger an update (default is 10%)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 100
+      default: 10
+  - name: "c3WattageChange"
+    title: "Clamp 3 - Wattage change"
+    description: "Change in wattage to trigger an update (default is 50W)"
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 60000
+      default: 50
   - name: "g1hemkWh"
     title: "Group 1 - Report kWh of whole HEM"
     description: "Group 1 - Report kWh of whole HEM"
@@ -519,89 +625,31 @@ preferences:
         0: "Not included"
         2097152: "Report Amps of Clamp 3"
       default: 0
-  - name: "testInput"
-    title: "testInput"
-    description: "test input to see how many characters it accepts ºº!#%$ xxxxx xxxxxxx xxxxxxx xxxxxx x xxxxx xxx xxx xxx"
-    required: false
-    preferenceType: string
-    definition:
-        stringType: "text"
-  - name: "maxTime"
-    title: "Temp Rep Max Interval(5..240 min)"
-    required: false
-    preferenceType: integer
-    definition:
-      minimum: 5
-      maximum: 240
-      default: 5   
-  - name: "changeRep"
-    title: "Rep Temp Change 0.1 to 6(10..600)"
-    required: false
-    preferenceType: integer
-    definition:
-      minimum: 10
-      maximum: 600
-      default: 10    
-  - name: "garageSensor"
-    title: "Use on garage door"
-    required: false
-    preferenceType: enumeration
-    definition:
-      options:
-        "Yes" : "Yes"
-        "No"  : "No"
-      default: "No"
-  - name: "param101"
-    title: "Parameter 101"
-    description: "See https://help.aeotec.com/support/solutions/articles/6000191986-hem-gen5-parameter-101-103-and-111-113-use-"
+  - name: "valueg1"
+    title: "Do not use1"
+    description: "Do not use1"
     required: false
     preferenceType: integer
     definition:
       minimum: 0
-      maximum: 4194303
-      default: 5 
-  - name: "param102"
-    title: "Parameter 102"
-    description: "See https://help.aeotec.com/support/solutions/articles/6000191986-hem-gen5-parameter-101-103-and-111-113-use-"
+      maximum: 1000000
+      default: 592128
+  - name: "valueg2"
+    title: "Do not use2"
+    description: "Do not use2"
     required: false
     preferenceType: integer
     definition:
       minimum: 0
-      maximum: 4194303
-      default: 5
-  - name: "param103"
-    title: "Parameter 103"
-    description: "See https://help.aeotec.com/support/solutions/articles/6000191986-hem-gen5-parameter-101-103-and-111-113-use-"
+      maximum: 1000000
+      default: 592128
+  - name: "valueg3"
+    title: "Do not use3"
+    description: "Do not use3"
     required: false
     preferenceType: integer
     definition:
       minimum: 0
-      maximum: 4194303
-      default: 5
-  - name: "param111"
-    title: "Parameter 111"
-    description: "See https://help.aeotec.com/support/solutions/articles/6000191986-hem-gen5-parameter-101-103-and-111-113-use-"
-    required: false
-    preferenceType: integer
-    definition:
-      minimum: 0
-      maximum: 4194303
-      default: 5
-  - name: "param112"
-    title: "Parameter 112"
-    description: "See https://help.aeotec.com/support/solutions/articles/6000191986-hem-gen5-parameter-101-103-and-111-113-use-"
-    required: false
-    preferenceType: integer
-    definition:
-      minimum: 0
-      maximum: 4194303
-      default: 5
-  - name: "param113"
-    title: "Parameter 113"
-    description: "See https://help.aeotec.com/support/solutions/articles/6000191986-hem-gen5-parameter-101-103-and-111-113-use-"
-    required: false
-    preferenceType: integer
-    definition:
-      minimum: 0
-      maximum: 4194303
-      default: 5
+      maximum: 1000000
+      default: 592128
+

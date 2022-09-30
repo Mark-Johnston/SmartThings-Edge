@@ -20,15 +20,22 @@ local devices = {
             product_ids = {0x005F}
         },
         PARAMETERS = {
-            g1clamp1W = {parameter_number = 111, size = 4},
-            zwaveNotificationStatus = {parameter_number = 2, size = 1},
-            indicatorNotification = {parameter_number = 3},
-            soundNotificationStatus = {parameter_number = 4, size = 1},
-            tempReportInterval = {parameter_number = 20, size = 2},
-            tempReportHysteresis = {parameter_number = 21, size = 2},  
-            temperatureThreshold = {parameter_number = 30, size = 2},
-            overheatInterval = {parameter_number = 31, size = 2},
-            outOfRange = {parameter_number = 32, size = 2}
+		--Need to do parameters 2 - think we should retrofit that depending on demand
+            valueg1 = {parameter_number = 101, size = 4},
+            valueg2 = {parameter_number = 102, size = 4},
+            valueg3 = {parameter_number = 103, size = 4},
+			refreshOnTimeOrQuantum = {parameter_number = 3, size = 1},     -- done
+			wattageChangeWholeHEM = {parameter_number = 4, size = 2},     -- done
+			c1WattageChange = {parameter_number = 5, size = 2},     -- done
+			c2WattageChange = {parameter_number = 6, size = 2},     -- done
+			c3WattageChange = {parameter_number = 7, size = 2},     -- done
+			percentageChangeWholeHEM = {parameter_number = 8, size = 1},     -- done
+			c1PercentageChange = {parameter_number = 9, size = 1},  -- done
+			c2PercentageChange = {parameter_number = 10, size = 1}, -- done
+			c3PercentageChange = {parameter_number = 11, size = 1}, -- done
+			c1RefreshInterval = {parameter_number = 111, size = 4}, -- done
+			c2RefreshInterval = {parameter_number = 112, size = 4}, -- done
+			c3RefreshInterval = {parameter_number = 113, size = 4}  -- done
         }
     }
 }
@@ -37,12 +44,10 @@ local preferences = {}
 
 preferences.get_device_parameters = function(zw_device)
     for _, device in pairs(devices) do
-log.info("mj-asdfasdfaf", device.MATCHING_MATRIX.mfrs, device.MATCHING_MATRIX.product_types, device.MATCHING_MATRIX.product_ids)
         if zw_device:id_match(
             device.MATCHING_MATRIX.mfrs,
             device.MATCHING_MATRIX.product_types,
             device.MATCHING_MATRIX.product_ids) then
-			log.info("mj-matched in get-device-parameters", device.PARAMETERS)
             return device.PARAMETERS
         end
     end
@@ -54,7 +59,6 @@ preferences.to_numeric_value = function(new_value)
     if numeric == nil then -- in case the value is boolean
         numeric = new_value and 1 or 0
     end
-	log.info("mj-to_numeric-value", numeric, new_value)
     return numeric
 end
 
